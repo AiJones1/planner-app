@@ -34,7 +34,8 @@ export interface RecipeIngredient{
 }
 
 export interface DayMeal{
-    dayID: Date;
+    dayId: Date;
+    dayOfWeek: String;
     breakfast: Recipe | null;
     lunch: Recipe | null;
     dinner: Recipe | null;

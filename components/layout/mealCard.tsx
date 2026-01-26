@@ -5,22 +5,18 @@ import CardContent from "@mui/material/CardContent";
 
 
 interface MealCardProps {
-  recipe: Recipe | null;
-  mealType: string;
-  time?: string; // e.g., "Breakfast", "Lunch", "Dinner"
-
+  recipe: Recipe;
 }
 
-export const MealCard: React.FC<MealCardProps> = ({ recipe, mealType, time }) => {
+export const MealCard: React.FC<MealCardProps> = ({ recipe}) => {
   return (
-    <Card variant="outlined" sx={{ minWidth: 200, marginBottom: 2 }}>
+    <Card variant="outlined" >
       <CardContent>
-        <h3>{mealType}</h3>
         {recipe ? (
           <>          
             <h4>{recipe.name}</h4>
             <p>{recipe.description}</p>
-            <p>Cooking Time: {time} mins</p>
+            <p>Cooking Time: {recipe.cookingTime} mins</p>
           </>
         ) : (
           <p>No recipe assigned</p>
