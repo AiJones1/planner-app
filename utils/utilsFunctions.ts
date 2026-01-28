@@ -11,6 +11,7 @@ import {
   Ingredient
   } from '../db/types/database_types';
 
+import { dummyIngredients } from '../db/temp/dummyData';
 
 export function filterRecipesByMealType(
   recipes: Recipe[], 
@@ -49,6 +50,10 @@ export function filterRecipesByIngredients(
 }
 
 // ============== GETTER FUNCTIONS ==============
+
+function getIngredientById(ingredientId: string): Ingredient | undefined {
+  return dummyIngredients.find(ing => ing.ingredientId === ingredientId);
+}
 
 export function getRecipeById(
   recipes: Recipe[], 
@@ -105,42 +110,41 @@ function getRandomMeal(recipes: Recipe[] ){
 
 // ============== SHOPPING LIST FUNCTIONS ==============
 
-export function generateShoppingList(
-  mealPlan: MealPlan,
-  ingredients: Ingredient[]
-): ShoppingList {
-  const ingredientMap = new Map<string, ShoppingListItem>();
-  
-  mealPlan.days.forEach(day => {
+export function generateShoppingList(weeklyPlan: DayMeal[]){
+  // check for unit mismatch at a later point
+  const ingredientsMap = new Map<Ingredient, number>();
+
+  weeklyPlan.forEach(day => {
     const meals = [day.breakfast, day.lunch, day.dinner].filter(Boolean) as Recipe[];
-    
+
     meals.forEach(recipe => {
-      recipe.ingredients.forEach(recipeIngredient => {
-        const existing = ingredientMap.get(recipeIngredient.ingredientId);
-        const ingredient = ingredients.find(i => i.ingredientId === recipeIngredient.ingredientId);
+      recipe.ingredients.forEach((recipeIng: RecipeIngredient) => {
+        const ing = getIngredientById(recipeIng.ingredientId);
         
-        if (!ingredient) return;
-        
-        if (existing) {
-          existing.totalQuantity += recipeIngredient.quantity;
-        } else {
-          ingredientMap.set(recipeIngredient.ingredientId, {
-            ingredient,
-            substituteOptions: [], 
-            totalQuantity: recipeIngredient.quantity,
-            unit: ingredient.unit
-          });
+        if (!ing) {
+          console.warn(`Ingredient ${recipeIng.ingredientId} not found`);
+          return;
         }
-      });
+        if(ingredientsMap.has(ing)){
+          const currQty = ingredientsMap.get(ing) ||0;
+          ingredientsMap.set(ing, currQty + recipeIng.quantity);
+        }else{
+          ingredientsMap.set(ing, recipeIng.quantity);
+        }
+      })
+    })
+  })
+  const result: ShoppingListItem[]=[];
+
+  ingredientsMap.forEach((totalQuantity, ingredient) => {
+    result.push({
+      ingredient,
+      totalQuantity,
+      unit: ingredient.unit
     });
   });
-  
-  return {
-    shoppingListId: `sl-${Date.now()}`,
-    userId: mealPlan.userId,
-    items: Array.from(ingredientMap.values())
-  };
-}
+  return result;
+};
 
 
 // ============== UTILITY FUNCTIONS ==============
