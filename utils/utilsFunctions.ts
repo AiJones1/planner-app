@@ -11,6 +11,7 @@ import {
   Ingredient
   } from '../db/types/database_types';
 
+import { dummyIngredients } from '../db/temp/dummyData';
 
 export function filterRecipesByMealType(
   recipes: Recipe[], 
@@ -50,25 +51,15 @@ export function filterRecipesByIngredients(
 
 // ============== GETTER FUNCTIONS ==============
 
+function getIngredientById(ingredientId: string): Ingredient | undefined {
+  return dummyIngredients.find(ing => ing.ingredientId === ingredientId);
+}
+
 export function getRecipeById(
   recipes: Recipe[], 
   recipeId: string
 ): Recipe | undefined {
   return recipes.find(recipe => recipe.recipeId === recipeId);
-}
-
-export function getRecipesByMealTypes(
-  recipes: Recipe[], 
-  mealTypes: string[]
-): Map<string, Recipe[]> {
-  const result = new Map<string, Recipe[]>();
-  
-  mealTypes.forEach(mealType => {
-    const filtered = filterRecipesByMealType(recipes, mealType);
-    result.set(mealType.toLowerCase(), filtered);
-  });
-  
-  return result;
 }
 
 export function getRandomRecipe(recipes: Recipe[]): Recipe | null {
@@ -77,236 +68,84 @@ export function getRandomRecipe(recipes: Recipe[]): Recipe | null {
   return recipes[randomIndex];
 }
 
-export function getRandomRecipes(
-  recipes: Recipe[], 
-  count: number
-): Recipe[] {
-  if (count >= recipes.length) return [...recipes];
-  
-  const shuffled = [...recipes].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
 
 // ============== MEAL PLANNING FUNCTIONS ==============
+export function createWeeklyMealPlan(recipes: Recipe[], startOfWeek: Date) {
+  const weekdays = ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'];
+  const weeklyPlan: DayMeal[]=[];
 
-export interface UserPreferences {
-  planDays: number; // 7 for days of week
-  includeWeekends: boolean;
-  mealsPerDay: {
-    breakfast: boolean;
-    lunch: boolean;
-    dinner: boolean;
-  };
-  cookingTimeLimit?: number; 
-  avoidDuplicates: boolean; 
-}
+  const breakfastRecipes = recipes.filter(recipe => recipe.mealType.toLowerCase() === "breakfast");
+  const lunchRecipes = recipes.filter(recipe => recipe.mealType.toLowerCase() === "lunch");
+  const dinnerRecipes = recipes.filter(recipe => recipe.mealType.toLowerCase() === "dinner");
 
-export const defaultUserPreferences: UserPreferences = {
-  planDays: 7,
-  includeWeekends: true,
-  mealsPerDay: {
-    breakfast: true,
-    lunch: true,
-    dinner: true
-  },
-  avoidDuplicates: true
-};
+  for(var i=0; i<weekdays.length; i++){
+    const dayDate = new Date();
+    dayDate.setDate(startOfWeek.getDate()+i);
 
-export function createWeeklyMealPlan(
-  recipeList: RecipeList,
-  preferences: UserPreferences = defaultUserPreferences
-): MealPlan {
-  const { planDays, mealsPerDay, avoidDuplicates } = preferences;
-  const allRecipes = recipeList.recipes;
-  
-  // Group by meal type
-  const recipesByMealType = getRecipesByMealTypes(allRecipes, [
-    'breakfast', 'lunch', 'dinner'
-  ]);
-  
-  const days: DayMeal[] = [];
-  const usedRecipeIds = new Set<string>();
-  
-  for (let i = 0; i < planDays; i++) {
-    const day = new Date();
-    day.setDate(day.getDate() + i);
-    
-    const dayOfWeek = day.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    
-    if (isWeekend && !preferences.includeWeekends) {
-      continue;
-    }
-    
     const dayMeal: DayMeal = {
-      dayID: new Date(day),
-      breakfast: null,
-      lunch: null,
-      dinner: null
+      dayId: dayDate,
+      dayOfWeek: weekdays[i],
+      breakfast: getRandomMeal(breakfastRecipes),
+      lunch: getRandomMeal(lunchRecipes),
+      dinner: getRandomMeal(dinnerRecipes)
     };
-    
-    // Assign meals based on preferences
-    if (mealsPerDay.breakfast) {
-      dayMeal.breakfast = getRandomMeal(
-        recipesByMealType.get('breakfast') || [],
-        usedRecipeIds,
-        avoidDuplicates,
-        preferences
-      );
-    }
-    
-    if (mealsPerDay.lunch) {
-      dayMeal.lunch = getRandomMeal(
-        recipesByMealType.get('lunch') || [],
-        usedRecipeIds,
-        avoidDuplicates,
-        preferences
-      );
-    }
-    
-    if (mealsPerDay.dinner) {
-      dayMeal.dinner = getRandomMeal(
-        recipesByMealType.get('dinner') || [],
-        usedRecipeIds,
-        avoidDuplicates,
-        preferences
-      );
-    }
-    
-    days.push(dayMeal);
+    weeklyPlan.push(dayMeal);
+    // add conditionals for filling meal
+  }  
+  var mealPlan: MealPlan = {
+    mealPlanId: startOfWeek,
+    // Update user ID later to accept and adjust mealplan for user settings
+    userId: '1',
+    days: weeklyPlan
   }
-  
-  return {
-    mealPlanId: new Date(), 
-    userId: recipeList.userId,
-    days
-  };
+  return mealPlan;
 }
 
-function getRandomMeal(
-  recipes: Recipe[],
-  usedRecipeIds: Set<string>,
-  avoidDuplicates: boolean,
-  preferences: UserPreferences
-): Recipe | null {
-  if (recipes.length === 0) return null;
-  
-  let availableRecipes = [...recipes];
-  if (preferences.cookingTimeLimit) {
-    availableRecipes = filterRecipesByCookingTime(
-      availableRecipes, 
-      preferences.cookingTimeLimit
-    );
-  }
-  
-  if (avoidDuplicates && usedRecipeIds.size > 0) {
-    availableRecipes = availableRecipes.filter(
-      recipe => !usedRecipeIds.has(recipe.recipeId)
-    );
-  }
-  
-
-  if (availableRecipes.length === 0) {
-    if (avoidDuplicates) {
-      return null; 
-    } else {
-      const recipe = getRandomRecipe(recipes);
-      if (recipe) usedRecipeIds.add(recipe.recipeId);
-      return recipe;
-    }
-  }
-  
-  const recipe = getRandomRecipe(availableRecipes);
-  if (recipe) {
-    usedRecipeIds.add(recipe.recipeId);
-  }
-  
+function getRandomMeal(recipes: Recipe[] ){
+  var n = recipes.length;
+  var chosen = Math.floor(Math.random()*n);
+  var recipe = recipes[chosen];
   return recipe;
-}
-
-export function generateMealPlanFromPreferences(
-  recipeList: RecipeList,
-  preferences: Partial<UserPreferences> = {}
-): MealPlan {
-  const mergedPreferences: UserPreferences = {
-    ...defaultUserPreferences,
-    ...preferences
-  };
-  
-  return createWeeklyMealPlan(recipeList, mergedPreferences);
 }
 
 // ============== SHOPPING LIST FUNCTIONS ==============
 
-export function generateShoppingList(
-  mealPlan: MealPlan,
-  ingredients: Ingredient[]
-): ShoppingList {
-  const ingredientMap = new Map<string, ShoppingListItem>();
-  
-  mealPlan.days.forEach(day => {
+export function generateShoppingList(weeklyPlan: DayMeal[]){
+  // check for unit mismatch at a later point
+  const ingredientsMap = new Map<Ingredient, number>();
+
+  weeklyPlan.forEach(day => {
     const meals = [day.breakfast, day.lunch, day.dinner].filter(Boolean) as Recipe[];
-    
+
     meals.forEach(recipe => {
-      recipe.ingredients.forEach(recipeIngredient => {
-        const existing = ingredientMap.get(recipeIngredient.ingredientId);
-        const ingredient = ingredients.find(i => i.ingredientId === recipeIngredient.ingredientId);
+      recipe.ingredients.forEach((recipeIng: RecipeIngredient) => {
+        const ing = getIngredientById(recipeIng.ingredientId);
         
-        if (!ingredient) return;
-        
-        if (existing) {
-          existing.totalQuantity += recipeIngredient.quantity;
-        } else {
-          ingredientMap.set(recipeIngredient.ingredientId, {
-            ingredient,
-            substituteOptions: [], 
-            totalQuantity: recipeIngredient.quantity,
-            unit: ingredient.unit
-          });
+        if (!ing) {
+          console.warn(`Ingredient ${recipeIng.ingredientId} not found`);
+          return;
         }
-      });
+        if(ingredientsMap.has(ing)){
+          const currQty = ingredientsMap.get(ing) ||0;
+          ingredientsMap.set(ing, currQty + recipeIng.quantity);
+        }else{
+          ingredientsMap.set(ing, recipeIng.quantity);
+        }
+      })
+    })
+  })
+  const result: ShoppingListItem[]=[];
+
+  ingredientsMap.forEach((totalQuantity, ingredient) => {
+    result.push({
+      ingredient,
+      totalQuantity,
+      unit: ingredient.unit
     });
   });
-  
-  return {
-    shoppingListId: `sl-${Date.now()}`,
-    userId: mealPlan.userId,
-    items: Array.from(ingredientMap.values())
-  };
-}
+  return result;
+};
 
-// ============== VALIDATION FUNCTIONS ==============
-
-export function validateMealPlan(mealPlan: MealPlan): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-  
-  if (!mealPlan.userId) {
-    errors.push('Meal plan must have a userId');
-  }
-  
-  if (!mealPlan.days || mealPlan.days.length === 0) {
-    errors.push('Meal plan must have at least one day');
-  }
-  
-  mealPlan.days.forEach((day, index) => {
-    if (!day.dayID) {
-      errors.push(`Day ${index + 1} must have a valid date`);
-    }
-    
-    const hasMeal = day.breakfast || day.lunch || day.dinner;
-    if (!hasMeal) {
-      errors.push(`Day ${index + 1} must have at least one meal`);
-    }
-  });
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-}
 
 // ============== UTILITY FUNCTIONS ==============
 

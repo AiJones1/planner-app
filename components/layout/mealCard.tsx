@@ -1,27 +1,37 @@
 import { Recipe } from "@/db/types/database_types";
+import { IconButton } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
 
 
 interface MealCardProps {
-  recipe: Recipe | null;
-  mealType: string;
-  time?: string; // e.g., "Breakfast", "Lunch", "Dinner"
-
+  recipe: Recipe;
+  onDelete?: () => void;
+  onEdit?: () => void;
 }
 
-export const MealCard: React.FC<MealCardProps> = ({ recipe, mealType, time }) => {
+export const MealCard: React.FC<MealCardProps> = ({ recipe, onDelete, onEdit}) => {
   return (
-    <Card variant="outlined" sx={{ minWidth: 200, marginBottom: 2 }}>
+    <Card variant="outlined" >
       <CardContent>
-        <h3>{mealType}</h3>
         {recipe ? (
-          <>          
+          <div>          
             <h4>{recipe.name}</h4>
             <p>{recipe.description}</p>
-            <p>Cooking Time: {time} mins</p>
-          </>
+            <p>Cooking Time: {recipe.cookingTime} mins</p>
+            <div className="mealcard-buttons">
+              <IconButton onClick ={onDelete}>
+                <DeleteIcon/>
+              </IconButton>
+              <IconButton onClick ={onEdit}>
+                <AddIcon/>
+              </IconButton>
+            </div>
+
+          </div>
         ) : (
           <p>No recipe assigned</p>
         )}
