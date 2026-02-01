@@ -1,6 +1,6 @@
 import { Grid, Card, Typography, Box, Stack } from '@mui/material';
 import { DayMeal, Recipe } from '../../db/types/database_types';
-import { MealCard } from './mealCard';
+import { MealCard } from '../layout/mealCard';
 
 interface MealPlanProps {
   weeklyPlan: DayMeal[];

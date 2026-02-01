@@ -7,16 +7,16 @@ import { DayMeal, MealPlan, Recipe, RecipeList, ShoppingListItem } from '../../d
 import { 
   createWeeklyMealPlan, 
   getRandomRecipe,
-  filterRecipesByMealType,
+  filterRecipesByMealType,  // filter may be utilised in future
   generateShoppingList  // Import your function
 } from '@/utils/utilsFunctions';
 
 // Mock data - replace with your actual data source
 import { mockRecipeList, mockRecipes } from '../../db/temp/dummyData';
 import { MealCard } from '@/components/layout/mealCard';
-import { MealPlanGrid } from '@/components/layout/weeklyMeals';
-import { GroceryList } from '@/components/layout/groceryList'; 
-import { RecipeModal } from '@/components/layout/recipeModal';
+import { MealPlanGrid } from '@/components/ui/weeklyMeals';
+import { GroceryList } from '@/components/ui/groceryList'; 
+import { RecipeModal } from '@/components/ui/recipeModal';
 // recipe selector to be added
 
 const Calendar: React.FC = () => {
