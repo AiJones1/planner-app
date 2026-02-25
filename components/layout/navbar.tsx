@@ -14,7 +14,7 @@ export default function Navbar() {
           <Link href='/meals'>Explore Recipes</Link>
         </li>
         <li>
-          <Link href='/pantry'>My Pantry</Link>
+          <Link href='/ingredients'>My Pantry</Link>
         </li>
       </ul>
     </nav>

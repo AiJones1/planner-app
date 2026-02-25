@@ -11,6 +11,7 @@ export interface User {
 
 export interface Recipe{
     recipeId: string;
+    userId: string;
     name: string;
     description: string;
     mealType: string;
@@ -62,7 +63,7 @@ export interface ShoppingList{
 
 export interface RecipeList{
     recipeListId: string;
-    listName: string;
     userId: string;
+    listName: string;
     recipes: Recipe[];
 }

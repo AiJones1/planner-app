@@ -60,6 +60,7 @@ export const dummyRecipeIngredients: RecipeIngredient[] = [
 export const mockRecipes: Recipe[] = [
   {
     recipeId: '1',
+    userId: '1',
     name: 'Classic Pancakes',
     description: 'Fluffy and delicious breakfast pancakes',
     mealType: 'Breakfast',
@@ -77,6 +78,7 @@ export const mockRecipes: Recipe[] = [
   },
   {
     recipeId: '2',
+    userId: '1',
     name: 'Grilled Chicken',
     description: 'Juicy grilled chicken with herbs',
     mealType: 'Lunch',
@@ -94,6 +96,7 @@ export const mockRecipes: Recipe[] = [
   },
   {
     recipeId: '3',
+    userId: '1',
     name: 'Spaghetti Carbonara',
     description: 'Creamy Italian pasta dish',
     mealType: 'Dinner',
@@ -111,6 +114,7 @@ export const mockRecipes: Recipe[] = [
   },
   {
     recipeId: '4',
+    userId: '1',
     name: 'Fresh Garden Salad',
     description: 'Healthy and refreshing salad',
     mealType: 'Lunch',
