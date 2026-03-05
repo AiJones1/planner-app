@@ -1,7 +1,9 @@
+// app/auth/login/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
+import './login.css'; // Regular CSS import
 
 export default function LoginPage() {
   // Basic state to satisfy props
@@ -31,11 +33,17 @@ export default function LoginPage() {
   };
 
   return (
-    <LoginForm 
-      formData={formData}
-      errors={errors}
-      onChange={handleChange}
-      onSubmit={handleSubmit}
-    />
+    <div className="login-page">
+      <div className="login-content">
+        <div className="login-container login-fade-in">
+          <LoginForm 
+            formData={formData}
+            errors={errors}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,0 +1,46 @@
+/* app/auth/login/login.css */
+.login-page {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+.login-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  min-height: 0; /* Important for flex children */
+}
+
+.login-container {
+  max-height: 100%;
+  overflow: auto;
+  width: 100%;
+}
+
+/* Optional: Add animation */
+@keyframes loginFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-fade-in {
+  animation: loginFadeIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .login-content {
+    padding: 0.5rem;
+  }
+}
